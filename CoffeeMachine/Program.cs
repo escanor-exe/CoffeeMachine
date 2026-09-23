@@ -8,10 +8,10 @@ namespace CoffeeMachine
 {
     internal class Program
     {
-        private static void Main()
+        private static async Task Main()
         {
             UserRepository userRepository = new("users.json");
-            InventoryRepository inventory = new InventoryRepository(
+            InventoryRepository inventoryRepository = new InventoryRepository(
             [
             new InventoryItem(Ingredient.CoffeeBeans, 100),
             new InventoryItem(Ingredient.Water, 500),
@@ -22,11 +22,31 @@ namespace CoffeeMachine
             UserManager userManager = new(userRepository);
             AuthenticationService authenticationService = new(userManager);
 
+            Notifier notifier = new();
+
+            List<Machine> machines =
+            [
+                new Machine(1),
+                new Machine(2),
+                new Machine(3)
+            ];
+
+            CoffeeService coffeeService = new(
+                inventoryRepository,
+                machines,
+                notifier,
+                sourcingTime: TimeSpan.FromSeconds(2),
+                preparationTime: TimeSpan.FromSeconds(5),
+                restockInterval: TimeSpan.FromSeconds(10));
+
             LoginView loginView = new LoginView(authenticationService, userManager);
             RegisterView registerView = new RegisterView(userManager);
-            StartupView startupView = new(loginView, registerView);
 
-            startupView.Launch();
+            CoffeeView coffeeView = new(coffeeService, notifier);
+
+            StartupView startupView = new(loginView, registerView, coffeeView);
+
+            await startupView.LaunchAsync();
         }
     }
 }

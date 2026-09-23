@@ -4,14 +4,16 @@
     {
         private readonly LoginView _loginView;
         private readonly RegisterView _registerView;
+        private readonly CoffeeView _coffeeView;
 
-        public StartupView(LoginView loginView, RegisterView registerView)
+        public StartupView(LoginView loginView, RegisterView registerView, CoffeeView coffeeView)
         {
             _loginView = loginView;
             _registerView = registerView;
+            _coffeeView = coffeeView;
         }
 
-        public void Launch()
+        public async Task LaunchAsync()
         {
             bool result = false;
 
@@ -38,8 +40,11 @@ Enter your choice: ");
                         result = _loginView.Login();
                         if (result)
                         {
-                            // switch to application main menu
                             Console.WriteLine("Login successful...");
+
+                            await _coffeeView.RunAsync(CancellationToken.None);
+
+                            return;
                         }
                         else
                         {
